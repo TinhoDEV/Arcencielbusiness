@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arc en Ciel Business — Base de données</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css?v=20260924a" />
+
+  <!-- Garde d'accès : réservé à l'administrateur connecté. -->
+  <script src="auth.js?v=20260924a"></script>
+  <script>
+    Auth.requireRole("admin");
+  </script>
+  <!-- PWA : installation Android / Desktop -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1a2f5e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Arc en Ciel" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <div class="app">
+    <header class="topbar">
+      <img class="logo-img" src="logo.jpg" alt="Arc-en-ciel Business" />
+
+      <div class="topbar-right">
+        <span class="admin-tag">Base de données</span>
+        <a class="btn btn-ghost btn-sm" href="panneau-admin.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Retour au panneau
+        </a>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="page-head">
+        <div class="crumb">Administration · Base de données</div>
+        <h1>Base de données</h1>
+      </div>
+
+      <!-- TABLE 1 : Enregistrement client -->
+      <div class="card section-gap">
+        <div class="card-head">
+          <h3>Enregistrement client</h3>
+          <div class="flex gap-16" style="align-items:center;">
+            <span class="sub" id="clientCount">0 enregistrement</span>
+            <button class="btn btn-ghost btn-sm" id="exportClients">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exporter CSV
+            </button>
+          </div>
+        </div>
+        <div class="card-pad" style="padding-bottom:0;">
+          <input class="input" type="search" id="clientDbSearch" placeholder="Rechercher par n° de carte ou nom du client…" style="margin:0; max-width:340px;" />
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>N° de carte</th>
+                <th>Nom du client</th>
+                <th>Date d'enregistrement</th>
+                <th style="text-align:right">Montant d'un carré</th>
+                <th style="text-align:center">Carrés signés</th>
+                <th style="text-align:center">Cumul carrés signés</th>
+                <th style="text-align:right">Solde</th>
+                <th style="text-align:right">Carte</th>
+                <th style="text-align:right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="clientsDb"><!-- injecté --></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLE 2 : Détail du journal -->
+      <div class="card section-gap">
+        <div class="card-head">
+          <h3>Détail du journal</h3>
+          <div class="flex gap-16" style="align-items:center;">
+            <span class="sub" id="journalCount">0 entrée</span>
+            <button class="btn btn-ghost btn-sm" id="exportJournalDb">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exporter CSV
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>N° de carte</th>
+                <th>Nom du client</th>
+                <th>Enregistré par</th>
+                <th style="text-align:right">Montant d'un carré</th>
+                <th style="text-align:center">Carrés signés</th>
+                <th style="text-align:right">Montant total</th>
+                <th>Type</th>
+                <th style="text-align:right">Carte</th>
+              </tr>
+            </thead>
+            <tbody id="journalDb"><!-- injecté --></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLE 3 : Enregistrement staff -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Enregistrement staff</h3>
+          <div class="flex gap-16" style="align-items:center;">
+            <span class="sub" id="staffCount">0 enregistrement</span>
+            <button class="btn btn-ghost btn-sm" id="exportStaff">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exporter CSV
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Nom affiché</th>
+                <th>Nom d'utilisateur</th>
+                <th>Mot de passe</th>
+                <th>Date de création</th>
+                <th style="text-align:right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="staffDb"><!-- injecté --></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <!-- Fenêtre d'affichage de la carte scannée -->
+  <div class="card-modal" id="cardModal">
+    <div class="card-modal-inner">
+      <button class="card-modal-close" id="cardModalClose" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <img id="cardModalImg" alt="Carte scannée" />
+      <div class="card-modal-caption" id="cardModalCaption"></div>
+    </div>
+  </div>
+
+  <script src="db.js?v=20260924a"></script>
+  <script src="base-de-donnees.js?v=20260924a"></script>
+</body>
+</html>

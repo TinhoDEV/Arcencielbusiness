@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arc en Ciel Business — Journal des enregistrements</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+
+  <link rel="stylesheet" href="style.css?v=20260924a" />
+
+  <!-- Garde d'accès : administrateur OU staff connecté. -->
+  <script src="auth.js?v=20260924a"></script>
+  <script>
+    if (!Auth.check("admin") && !Auth.check("staff")) {
+      window.location.replace("staff.html");
+    }
+  </script>
+  <!-- PWA : installation Android / Desktop -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1a2f5e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Arc en Ciel" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <div class="app">
+    <header class="topbar">
+      <img class="logo-img" src="logo.jpg" alt="Arc-en-ciel Business" />
+
+      <div class="topbar-right">
+        <span class="admin-tag">Journal du jour</span>
+        <a class="btn btn-ghost btn-sm" id="backBtn" href="panneau-admin.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Retour au panneau
+        </a>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="page-head">
+        <div class="crumb">Administration · Journal permanent</div>
+        <h1>Journal des enregistrements</h1>
+      </div>
+
+      <!-- Filtres -->
+      <div class="card section-gap">
+        <div class="card-pad">
+          <div class="reg-grid" style="grid-template-columns:repeat(5,1fr);">
+            <div class="reg-field">
+              <label for="filterFrom">Du</label>
+              <input class="input" type="date" id="filterFrom" />
+            </div>
+            <div class="reg-field">
+              <label for="filterTo">Au</label>
+              <input class="input" type="date" id="filterTo" />
+            </div>
+            <div class="reg-field">
+              <label for="filterSearch">Recherche (n° carte ou nom)</label>
+              <input class="input" type="text" id="filterSearch" placeholder="ex : 0123 ou dupont" />
+            </div>
+            <div class="reg-field">
+              <label>&nbsp;</label>
+              <button class="btn btn-ghost" id="exportJournal" style="white-space:nowrap;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exporter CSV
+              </button>
+            </div>
+            <div class="reg-field">
+              <label>&nbsp;</label>
+              <button class="btn btn-danger" id="deletePeriod" style="white-space:nowrap;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Résumé -->
+      <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat">
+          <div class="num" id="sumEntries">0</div>
+          <div class="lbl">Enregistrements</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="sumCarres">0</div>
+          <div class="lbl">Carrés signés</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="sumMontant">0 FCFA</div>
+          <div class="lbl" style="display:flex; align-items:center; justify-content:center; gap:6px;">
+            <span>Montant total</span>
+            <button type="button" id="toggleMontant" title="Afficher / masquer les montants" style="background:none; border:none; cursor:pointer; padding:2px; color:var(--ink-500); display:inline-flex;">
+              <svg id="eyeOpen" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="eyeOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Détail du journal</h3>
+          <span class="sub" id="journalCount">0 entrée</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>N° de carte</th>
+                <th>Nom du client</th>
+                <th style="text-align:right">Montant d'un carré</th>
+                <th style="text-align:center">Carrés signés</th>
+                <th style="text-align:center">Total carrés signés</th>
+                <th style="text-align:right">Montant total</th>
+                <th>Type</th>
+                <th>Enregistré par</th>
+                <th style="text-align:right">Carte</th>
+              </tr>
+            </thead>
+            <tbody id="journalBody"><!-- injecté --></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <!-- Fenêtre d'affichage de la carte scannée -->
+  <div class="card-modal" id="cardModal">
+    <div class="card-modal-inner">
+      <button class="card-modal-close" id="cardModalClose" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <img id="cardModalImg" alt="Carte scannée" />
+      <div class="card-modal-caption" id="cardModalCaption"></div>
+    </div>
+  </div>
+
+  <script src="db.js?v=20260924a"></script>
+  <script src="journal.js?v=20260924a"></script>
+</body>
+</html>

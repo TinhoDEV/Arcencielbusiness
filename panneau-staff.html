@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arc en Ciel Business — Panneau staff</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+
+  <link rel="stylesheet" href="style.css?v=20260924a" />
+
+  <!-- Garde d'accès : redirige si aucun staff valide n'est connecté. -->
+  <script src="auth.js?v=20260924a"></script>
+  <script>
+    Auth.requireRole("staff");
+  </script>
+  <!-- PWA : installation Android / Desktop -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1a2f5e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Arc en Ciel" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <!-- ============================================================
+       TABLEAU DE BORD STAFF (accès après connexion)
+       ============================================================ -->
+  <div class="app">
+    <header class="topbar">
+      <img class="logo-img" src="logo.jpg" alt="Arc-en-ciel Business" />
+
+      <div class="topbar-right">
+        <div class="user-chip">
+          <span class="avatar" id="staffAvatar">?</span>
+          <span class="uname" id="staffNameTop">—</span>
+        </div>
+        <span class="admin-tag">Espace Staff</span>
+        <button class="btn btn-ghost btn-sm" id="staffLogoutBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Déconnexion
+        </button>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="page-head">
+        <div class="crumb">Espace Staff</div>
+        <h1>Tableau de bord</h1>
+      </div>
+
+      <!-- SECTION 1 : Statistiques journalières -->
+      <div class="stat-grid two">
+        <div class="stat">
+          <div class="stat-ic gold">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>
+          </div>
+          <div class="num" style="display:flex; align-items:center; gap:10px; justify-content:flex-start;">
+            <span id="statDailyAmount">0 FCFA</span>
+            <button type="button" id="toggleDailyAmount" title="Masquer / afficher" style="background:none; border:none; padding:2px; cursor:pointer; color:var(--ink-400); display:inline-flex;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="lbl">Montant journalier reçu</div>
+        </div>
+        <div class="stat">
+          <div class="stat-ic green">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="num" id="statDailyCards">0</div>
+          <div class="lbl">Cartes journalières signées</div>
+        </div>
+      </div>
+
+      <!-- SECTION 2 : Enregistrement client -->
+      <div class="card section-gap">
+        <div class="card-head">
+          <div class="flex" style="align-items:center; gap:12px;">
+            <h3>Enregistrement client</h3>
+            <span class="new-card-flash" id="newCardFlash">
+              <span class="ncf-dot"></span> Nouvelle carte
+            </span>
+          </div>
+          <span class="sub">Carte d'épargne journalière</span>
+        </div>
+        <div class="card-pad">
+          <form id="createForm" autocomplete="off" novalidate>
+            <div class="scan-bar">
+              <button type="button" class="btn btn-ghost btn-sm" id="scanCardBtn" title="Prendre ou choisir une photo de la carte">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Scanner la carte
+              </button>
+              <span class="scan-hint" id="scanHint">Prenez une photo de la carte, puis remplissez les champs.</span>
+              <input type="file" id="scanCardInput" accept="image/*" capture="environment" hidden />
+              <input type="file" id="scanGalleryInput" accept="image/*" hidden />
+              <!-- Menu : caméra ou galerie -->
+              <div class="scan-menu" id="scanMenu" hidden>
+                <button type="button" id="scanCameraOpt">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Prendre une photo
+                </button>
+                <button type="button" id="scanGalleryOpt">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                  Choisir dans la galerie
+                </button>
+              </div>
+            </div>
+            <div class="reg-grid">
+              <div class="reg-field" style="position:relative;">
+                <label for="newCardNumber">N° de carte</label>
+                <input class="input" type="text" id="newCardNumber" placeholder="0123" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" />
+                <div class="card-suggest" id="cardSuggest"></div>
+              </div>
+              <div class="reg-field">
+                <label for="newUsername">Nom du client</label>
+                <input class="input" type="text" id="newUsername" placeholder="dupont_marie" />
+              </div>
+              <div class="reg-field">
+                <label for="newMontantCarreau">Montant d'un carré</label>
+                <input class="input" type="number" id="newMontantCarreau" placeholder="500" min="0" step="100" />
+              </div>
+              <div class="reg-field">
+                <label for="newNbCarreaux">Nombre de carrés</label>
+                <select class="input" id="newNbCarreaux"></select>
+              </div>
+              <div class="reg-field">
+                <label>Montant total</label>
+                <div class="reg-total" id="regTotal">0 FCFA</div>
+              </div>
+            </div>
+            <div class="flex" style="align-items:center; gap:14px; margin-top:20px; flex-wrap:wrap;">
+              <button type="submit" class="btn btn-gold" id="createBtn" style="white-space:nowrap;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Enregistrer le client
+              </button>
+              <span class="will-be" id="willBe"></span>
+            </div>
+            <p class="form-msg" id="createMsg" style="margin-top:12px;"></p>
+          </form>
+        </div>
+      </div>
+
+      <!-- SECTION 3 : Liste des clients du jour -->
+      <div class="card section-gap">
+        <div class="card-head">
+          <h3>Détail du journal</h3>
+          <span class="sub" id="clientCountLabel">0 entrée</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>N° de carte</th>
+                <th>Nom du client</th>
+                <th>Date d'enregistrement</th>
+                <th>Enregistré par</th>
+                <th style="text-align:right">Montant d'un carré</th>
+                <th style="text-align:center">Carrés signés</th>
+                <th style="text-align:right">Montant total</th>
+                <th style="text-align:right">Voir la carte</th>
+              </tr>
+            </thead>
+            <tbody id="clientsBody"><!-- injecté --></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================
+       PANNEAU DE GESTION D'UN CLIENT (drawer latéral)
+       ============================================================ -->
+  <div class="drawer-scrim" id="drawerScrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <div class="crumb" style="font-size:12px; color:var(--ink-400); font-weight:600; margin-bottom:4px;">Gestion du compte</div>
+        <div class="d-name" id="drawerName">—</div>
+        <div class="d-bal"><span id="drawerBalance">0</span> <small>FCFA</small></div>
+      </div>
+      <button class="drawer-close" id="drawerClose" aria-label="Fermer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Signer un carré (dépôt) -->
+      <div class="op-card dep">
+        <h4>Signer un carré <span class="tag">Carré</span></h4>
+        <input class="input" type="number" id="depAmount" placeholder="Montant du carré (FCFA)" min="1" step="100" />
+        <input class="input" type="text" id="depNote" placeholder="Note (optionnelle)" />
+        <button class="btn btn-primary btn-block btn-sm" id="depBtn">Signer le carré</button>
+      </div>
+
+      <!-- Retrait -->
+      <div class="op-card ret">
+        <h4>Enregistrer un retrait <span class="tag">Retrait</span></h4>
+        <input class="input" type="number" id="retAmount" placeholder="Montant (FCFA)" min="1" step="1000" />
+        <input class="input" type="text" id="retNote" placeholder="Note (optionnelle)" />
+        <button class="btn btn-primary btn-block btn-sm" id="retBtn">Enregistrer le retrait</button>
+      </div>
+
+      <!-- Historique complet -->
+      <div>
+        <div class="flex between" style="margin-bottom:6px;">
+          <span class="drawer-section-title">Historique complet</span>
+          <span class="muted" id="drawerTxCount" style="font-size:12.5px;">0 opération</span>
+        </div>
+        <div class="mini-tx" id="drawerTx"><!-- injecté --></div>
+      </div>
+    </div>
+
+    <div class="drawer-foot">
+      <button class="btn btn-danger btn-block btn-sm" id="deleteBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Supprimer ce compte
+      </button>
+    </div>
+  </aside>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <!-- Fenêtre d'affichage de la carte scannée -->
+  <div class="card-modal" id="cardModal">
+    <div class="card-modal-inner">
+      <button class="card-modal-close" id="cardModalClose" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <img id="cardModalImg" alt="Carte scannée" />
+      <div class="card-modal-caption" id="cardModalCaption"></div>
+    </div>
+  </div>
+
+  <!-- Champ caché pour la prise de photo client (appareil photo sur mobile) -->
+  <input type="file" id="photoInput" accept="image/*" capture="environment" hidden />
+
+  <script src="db.js?v=20260924a"></script>
+  <script src="inactivity.js?v=20260924a"></script>
+  <script src="panneau-staff.js?v=20260924a"></script>
+  <div class="app-version" aria-hidden="true">v20260924a</div>
+</body>
+</html>

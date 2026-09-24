@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arc en Ciel Business — Panneau admin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+
+  <link rel="stylesheet" href="style.css?v=20260924a" />
+
+  <!-- Garde d'accès : redirige vers la connexion admin si non identifié. -->
+  <script src="auth.js?v=20260924a"></script>
+  <script>
+    Auth.requireRole("admin");
+  </script>
+  <!-- PWA : installation Android / Desktop -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1a2f5e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Arc en Ciel" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <!-- ============================================================
+       TABLEAU DE BORD ADMIN (page dédiée, accès après connexion)
+       ============================================================ -->
+  <div class="app">
+    <header class="topbar">
+      <img class="logo-img" src="logo.jpg" alt="Arc-en-ciel Business" />
+
+      <div class="topbar-right">
+        <div class="notif-wrap">
+          <button class="notif-bell" id="notifBell" type="button" aria-label="Notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="notifBadge" hidden>0</span>
+          </button>
+          <div class="notif-pop" id="notifPop" hidden>
+            <div class="notif-pop-head">
+              <span>Notifications</span>
+              <button type="button" class="notif-clear" id="notifClear">Tout marquer lu</button>
+            </div>
+            <div class="notif-list" id="notifList"><!-- injecté --></div>
+          </div>
+        </div>
+        <span class="admin-tag" id="adminBadge">Administrateur</span>
+        <a class="btn btn-ghost btn-sm" href="base-de-donnees.html">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+          Base de données
+        </a>
+        <a class="btn btn-ghost btn-sm" href="journal.html">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Journal du jour
+        </a>
+        <a class="btn btn-ghost btn-sm" href="imprimer-cartes.html">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimer les cartes
+        </a>
+        <a class="btn btn-ghost btn-sm" href="migration-photos.html" title="Déplacer les anciennes photos vers le stockage (libère l'espace)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Optimiser les photos
+        </a>
+        <button class="btn btn-ghost btn-sm" id="settingsBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Paramètres
+        </button>
+        <button class="btn btn-ghost btn-sm" id="adminLogoutBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Déconnexion
+        </button>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="page-head flex between" style="align-items:flex-end; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div class="crumb">Administration</div>
+          <h1>Tableau de bord</h1>
+        </div>
+        <button type="button" class="btn btn-gold" id="viewRetiresBtn" style="background-color: rgb(91, 117, 179);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Cartes retirées
+        </button>
+        <button type="button" class="btn btn-gold" id="remplacementCarteBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Remplacement de carte
+        </button>
+        <button type="button" class="btn btn-gold" id="retraitCarteBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><line x1="12" y1="14" x2="18" y2="14"/></svg>
+          Retrait de carte
+        </button>
+      </div>
+
+      <!-- Sélecteur de période (impacte les montants des cartes) -->
+      <div class="flex between" style="margin-bottom:18px; flex-wrap:wrap; gap:12px;">
+        <span style="font-size:13.5px; font-weight:600; color:var(--ink-600);">Statistiques sur la période :</span>
+        <div class="flex" style="gap:10px; align-items:flex-end; position:relative; flex-wrap:wrap;">
+          <input type="hidden" id="statsPeriod" value="custom" />
+          <div class="reg-field">
+            <label for="statsFrom" style="display:block; font-size:12px; font-weight:600; color:var(--ink-600); margin-bottom:5px;">Du</label>
+            <input class="input" type="date" id="statsFrom" style="margin:0;" />
+          </div>
+          <div class="reg-field">
+            <label for="statsTo" style="display:block; font-size:12px; font-weight:600; color:var(--ink-600); margin-bottom:5px;">Au</label>
+            <input class="input" type="date" id="statsTo" style="margin:0;" />
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" id="statsEye" title="Masquer les montants">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            Masquer
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 1 : Statistiques -->
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-ic gold">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>
+          </div>
+          <div class="num" id="statDailyAmount">0 FCFA</div>
+          <div class="lbl">Solde des comptes clients total</div>
+        </div>
+        <div class="stat">
+          <div class="stat-ic green">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="num" id="statDailyCards">0</div>
+          <div class="lbl">Cartes signées</div>
+        </div>
+        <div class="stat">
+          <div class="stat-ic red">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="num" id="statDailyDisbursed">0 FCFA</div>
+          <div class="lbl">Montant décaissé</div>
+        </div>
+        <div class="stat">
+          <div class="stat-ic gold">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+          <div class="num" id="statProfit">0 FCFA</div>
+          <div class="lbl">Bénéfices</div>
+        </div>
+      </div>
+
+      <!-- SECTION 3 ter : Cartes remplies non encaissées (31 carrés) -->
+      <div class="card section-gap">
+        <div class="card-head">
+          <h3>Carte remplie pas encaissée</h3>
+          <span class="sub" id="fullCardsCountLabel">0 carte</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data compact">
+            <thead>
+              <tr>
+                <th>N° de carte</th>
+                <th>Nom du client</th>
+                <th>Date d'enregistrement</th>
+                <th style="text-align:right">Montant d'un carré</th>
+                <th style="text-align:center">Carrés signés</th>
+                <th style="text-align:right">Montant brut</th>
+                <th style="text-align:right">Avance</th>
+                <th style="text-align:right">Montant total</th>
+                <th style="text-align:right">Voir la carte</th>
+              </tr>
+            </thead>
+            <tbody id="fullCardsBody"><!-- injecté --></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 3 bis : Liste de tous les clients (recherche) -->
+      <div class="card section-gap">
+        <div class="card-head">
+          <h3>Liste de tous les clients</h3>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span class="sub" id="allClientCountLabel">0 client</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="refreshClientsBtn" title="Mettre à jour la liste">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Rafraîchir
+            </button>
+          </div>
+        </div>
+        <div class="card-pad" style="padding-bottom:14px;">
+          <input class="input" type="search" id="clientSearch" placeholder="Rechercher par n° de carte ou nom du client…" style="margin:0; max-width:340px;" />
+        </div>
+        <div class="table-wrap">
+          <table class="data compact">
+            <thead>
+              <tr>
+                <th>N° de carte</th>
+                <th>Nom du client</th>
+                <th>Date d'enregistrement</th>
+                <th style="text-align:right">Montant d'un carré</th>
+                <th style="text-align:center">Carrés signés</th>
+                <th style="text-align:right">Montant brut</th>
+                <th style="text-align:right">Avance</th>
+                <th style="text-align:right">Montant total</th>
+                <th style="text-align:right">Voir la carte</th>
+                <th style="text-align:right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="allClientsBody" data-scroll10><!-- injecté --></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 4 : Gestion du personnel (Staff) -->
+      <div class="card section-gap">
+        <div class="card-head">
+          <h3>Créer un compte staff</h3>
+          <span class="sub">Le personnel accède à l'espace staff avec ces identifiants</span>
+        </div>
+        <div class="card-pad">
+          <form id="staffCreateForm" autocomplete="off" novalidate>
+            <div class="create-grid">
+              <div>
+                <label style="display:block; font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:7px;">Nom affiché</label>
+                <input class="input" type="text" id="newStaffDisplay" placeholder="ex : Ibrahim Koné" style="margin:0;" />
+              </div>
+
+              <div>
+                <label style="display:block; font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:7px;">Nom d'utilisateur</label>
+                <input class="input" type="text" id="newStaffUsername" placeholder="ex : agent_kone" style="margin:0;" />
+              </div>
+
+              <div class="col-span">
+                <label style="display:block; font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:7px;">Mot de passe</label>
+                <div class="pw-row">
+                  <input class="input" type="text" id="newStaffPassword" placeholder="Saisissez ou générez un mot de passe" style="margin:0;" />
+                  <button type="button" class="btn btn-ghost btn-sm" id="genStaffPwBtn">Générer</button>
+                  <button type="button" class="btn btn-ghost btn-sm" id="copyStaffPwBtn" disabled>Copier</button>
+                </div>
+              </div>
+
+              <div class="col-span">
+                <div class="hint">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  Communiquez ces identifiants au membre du staff. Il pourra se connecter via la page « Espace Staff ».
+                </div>
+              </div>
+
+              <div class="col-span">
+                <button type="submit" class="btn btn-gold" id="createStaffBtn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Créer le compte staff
+                </button>
+                <p class="form-msg" id="staffCreateMsg" style="display:inline-block; margin-left:14px; margin-top:0;"></p>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- SECTION 5 : Liste du personnel -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Personnel (Staff)</h3>
+          <span class="sub" id="staffCountLabel">0 membre</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Nom affiché</th>
+                <th>Nom d'utilisateur</th>
+                <th>Mot de passe</th>
+                <th>Date de création</th>
+                <th style="text-align:right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="staffBody"><!-- injecté --></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================
+       PANNEAU DE GESTION D'UN CLIENT (drawer latéral)
+       ============================================================ -->
+  <div class="drawer-scrim" id="drawerScrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <div class="crumb" style="font-size:12px; color:var(--ink-400); font-weight:600; margin-bottom:4px;">Gestion du compte</div>
+        <div class="d-name" id="drawerName">—</div>
+        <div class="d-bal"><span id="drawerBalance">0</span> <small>FCFA</small></div>
+      </div>
+      <button class="drawer-close" id="drawerClose" aria-label="Fermer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Modifier les informations du client -->
+      <div class="op-card" style="border:1px solid var(--line, #e6e8ec);">
+        <h4>Modifier les informations <span class="tag">Édition</span></h4>
+        <label style="display:block; font-size:12px; font-weight:600; color:var(--ink-500); margin:4px 0 3px;">Nom du client</label>
+        <input class="input" type="text" id="editName" placeholder="Nom du client" />
+        <label style="display:block; font-size:12px; font-weight:600; color:var(--ink-500); margin:8px 0 3px;">N° de carte</label>
+        <input class="input" type="text" id="editCard" placeholder="N° de carte (4 chiffres)" inputmode="numeric" maxlength="4" />
+        <label style="display:block; font-size:12px; font-weight:600; color:var(--ink-500); margin:8px 0 3px;">Montant d'un carré (FCFA)</label>
+        <input class="input" type="number" id="editMontant" placeholder="Montant d'un carré" min="0" step="100" />
+        <button class="btn btn-gold btn-block btn-sm" id="editSaveBtn" style="margin-top:10px;">Enregistrer les modifications</button>
+        <div id="editMsg" class="form-msg" style="margin-top:6px;"></div>
+      </div>
+
+      <!-- Carrés signés (ajouter / enlever plusieurs) -->
+      <div class="op-card dep">
+        <h4>Carrés signés <span class="tag">Carré</span></h4>
+        <p class="sub" style="margin:0 0 10px;">Carrés actuels : <strong id="drawerCarres">0</strong></p>
+        <div style="display:flex; gap:8px; align-items:stretch; margin-bottom:8px;">
+          <input class="input" type="number" id="addCarresNb" value="1" min="1" max="31" step="1" style="margin:0; flex:1;" />
+          <button class="btn btn-primary btn-sm" id="addCarresBtn" style="white-space:nowrap;">+ Ajouter un carré</button>
+        </div>
+        <div style="display:flex; gap:8px; align-items:stretch;">
+          <input class="input" type="number" id="delCarresNb" value="1" min="1" max="31" step="1" style="margin:0; flex:1;" />
+          <button class="btn btn-ghost btn-sm" id="delCarresBtn" style="white-space:nowrap;">− Enlever un carré</button>
+        </div>
+        <div id="carresMsg" class="form-msg" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Historique complet -->
+      <div>
+        <div class="flex between" style="margin-bottom:6px;">
+          <span class="drawer-section-title">Historique complet</span>
+          <span class="muted" id="drawerTxCount" style="font-size:12.5px;">0 opération</span>
+        </div>
+        <div class="mini-tx" id="drawerTx"><!-- injecté --></div>
+      </div>
+    </div>
+
+    <div class="drawer-foot">
+      <button class="btn btn-danger btn-block btn-sm" id="deleteBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Supprimer ce compte
+      </button>
+    </div>
+  </aside>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <!-- ============================================================
+       MODALE — RETRAIT DE CARTE
+       ============================================================ -->
+  <div class="modal-scrim" id="retraitScrim">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Retrait de carte">
+      <div class="modal-head">
+        <div>
+          <h3>Retrait de carte</h3>
+          <p class="sub">Recherchez la carte puis choisissez le type de retrait.</p>
+        </div>
+        <button class="drawer-close" id="retraitClose" aria-label="Fermer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div style="position:relative;">
+          <label class="field-label" for="retraitSearch">N° de carte ou nom du client</label>
+          <input class="input" type="search" id="retraitSearch" placeholder="Rechercher…" autocomplete="off" style="margin:0;" />
+          <div class="card-suggest" id="retraitSuggest"></div>
+        </div>
+
+        <!-- Carte sélectionnée -->
+        <div id="retraitClientBox" style="display:none; border:1px solid var(--line); border-radius: var(--r-md); padding:14px;">
+          <div class="flex between" style="gap:12px;">
+            <div>
+              <div style="font-size:12px; color:var(--ink-400); font-weight:600;">Carte <span class="code-pill" id="retraitCardNum">—</span></div>
+              <div style="font-size:16px; font-weight:700; color:var(--navy); margin-top:4px;" id="retraitClientName">—</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12px; color:var(--ink-400); font-weight:600;">Solde actuel</div>
+              <div style="font-size:18px; font-weight:800; color:var(--navy); margin-top:4px;" id="retraitSolde">0 FCFA</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Type de retrait -->
+        <div id="retraitTypeBox" style="display:none;">
+          <div class="sub-group-title" style="margin-bottom:10px;">Type de retrait</div>
+          <div class="flex" style="gap:10px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--navy); cursor:pointer;">
+              <input type="radio" name="retraitType" value="total" checked /> Retrait total
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--navy); cursor:pointer;">
+              <input type="radio" name="retraitType" value="avance" /> Avance sur carte
+            </label>
+          </div>
+          <div id="retraitAvanceBox" style="display:none; margin-top:12px;">
+            <label class="field-label" for="retraitMontant">Montant de l'avance (FCFA)</label>
+            <input class="input" type="number" id="retraitMontant" placeholder="0" min="0" step="100" style="margin:0;" />
+          </div>
+        </div>
+
+        <p class="form-msg" id="retraitMsg" style="margin:0; min-height:0;"></p>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="retraitCancel">Annuler</button>
+        <button type="button" class="btn btn-danger" id="retraitSave" disabled>Enregistrer le retrait</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODALE — REMPLACEMENT DE CARTE
+       ============================================================ -->
+  <div class="modal-scrim" id="remplacementScrim">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Remplacement de carte">
+      <div class="modal-head">
+        <div>
+          <h3>Remplacement de carte</h3>
+          <p class="sub">Recherchez la carte à remplacer, puis saisissez le n° de la nouvelle carte.</p>
+        </div>
+        <button class="drawer-close" id="remplacementClose" aria-label="Fermer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div style="position:relative;">
+          <label class="field-label" for="remplacementSearch">Carte à remplacer (n° de carte ou nom du client)</label>
+          <input class="input" type="search" id="remplacementSearch" placeholder="Rechercher…" autocomplete="off" style="margin:0;" />
+          <div class="card-suggest" id="remplacementSuggest"></div>
+        </div>
+
+        <!-- Carte à remplacer (infos copiées, lecture seule) -->
+        <div id="remplacementClientBox" style="display:none;">
+          <div class="sub-group-title" style="margin:4px 0 10px;">Carte à remplacer</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label class="field-label">N° de carte</label>
+              <input class="input" type="text" id="remplOldCard" readonly style="margin:0; background:#f4f6f9;" />
+            </div>
+            <div>
+              <label class="field-label">Nom du client</label>
+              <input class="input" type="text" id="remplOldName" readonly style="margin:0; background:#f4f6f9;" />
+            </div>
+            <div>
+              <label class="field-label">Montant d'un carré</label>
+              <input class="input" type="text" id="remplOldMontant" readonly style="margin:0; background:#f4f6f9;" />
+            </div>
+            <div>
+              <label class="field-label">Nombre de carrés signés</label>
+              <input class="input" type="text" id="remplOldCarres" readonly style="margin:0; background:#f4f6f9;" />
+            </div>
+          </div>
+
+          <div class="sub-group-title" style="margin:16px 0 10px;">Remplacer par la carte n°</div>
+          <div style="display:flex; gap:8px; align-items:stretch;">
+            <input class="input" type="text" id="remplNewCard" placeholder="Nouveau n° de carte (4 chiffres)" inputmode="numeric" maxlength="4" style="margin:0; flex:1;" />
+            <button type="button" class="btn btn-ghost" id="remplScanBtn" title="Scanner la nouvelle carte" style="white-space:nowrap;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="8" width="10" height="8" rx="1"/></svg>
+              Scanner
+            </button>
+          </div>
+          <input type="file" id="remplScanInput" accept="image/*" capture="environment" style="display:none;" />
+          <p class="sub" style="margin:8px 0 0;">Le nom du client, le montant d'un carré et les carrés signés seront recopiés sur la nouvelle carte.</p>
+        </div>
+
+        <p class="form-msg" id="remplacementMsg" style="margin:0; min-height:0;"></p>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="remplacementCancel">Annuler</button>
+        <button type="button" class="btn btn-gold" id="remplacementSave" disabled>Remplacer la carte</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fenêtre d'affichage de la carte scannée -->
+  <div class="card-modal" id="cardModal">
+    <div class="card-modal-inner">
+      <button class="card-modal-close" id="cardModalClose" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <img id="cardModalImg" alt="Carte scannée" />
+      <div class="card-modal-caption" id="cardModalCaption"></div>
+    </div>
+  </div>
+
+  <!-- Champ caché pour la prise de photo client (appareil photo sur mobile) -->
+  <input type="file" id="photoInput" accept="image/*" capture="environment" hidden />
+
+  <!-- ============================================================
+       MODALE — PARAMÈTRES ADMINISTRATEUR
+       ============================================================ -->
+  <div class="modal-scrim" id="settingsScrim">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Paramètres administrateur">
+      <div class="modal-head">
+        <div>
+          <h3>Paramètres administrateur</h3>
+          <p class="sub">Modifiez vos identifiants de connexion.</p>
+        </div>
+        <button class="drawer-close" id="settingsClose" aria-label="Fermer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form id="settingsForm" autocomplete="off" novalidate>
+        <div class="modal-body">
+          <div>
+            <label class="field-label" for="setDisplayName">Nom affiché</label>
+            <input class="input" type="text" id="setDisplayName" placeholder="Administrateur" style="margin:0;" />
+          </div>
+          <div>
+            <label class="field-label" for="setUsername">Identifiant de connexion</label>
+            <input class="input" type="text" id="setUsername" placeholder="admin" style="margin:0;" />
+          </div>
+
+          <div class="sub-group">
+            <div class="sub-group-title">Changer le mot de passe (optionnel)</div>
+            <label class="field-label" for="setNewPw">Nouveau mot de passe</label>
+            <input class="input" type="password" id="setNewPw" placeholder="Laisser vide pour ne pas changer" />
+            <label class="field-label" for="setNewPw2">Confirmer le nouveau mot de passe</label>
+            <input class="input" type="password" id="setNewPw2" placeholder="••••••••" style="margin:0;" />
+          </div>
+
+          <div class="sub-group">
+            <div class="sub-group-title">Sécurité</div>
+            <label class="field-label" for="setCurrentPw">Mot de passe actuel (obligatoire pour valider)</label>
+            <input class="input" type="password" id="setCurrentPw" placeholder="••••••••" style="margin:0;" />
+          </div>
+
+          <p class="form-msg" id="settingsMsg" style="margin:0; min-height:0;"></p>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" id="settingsCancel">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="settingsSave">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="db.js?v=20260924a"></script>
+  <script src="inactivity.js?v=20260924a"></script>
+  <script src="panneau-admin.js?v=20260924a"></script>
+  <div class="app-version" aria-hidden="true">v20260924a</div>
+</body>
+</html>

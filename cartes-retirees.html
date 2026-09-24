@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cartes retirées — Arc en Ciel Business</title>
+  <link rel="stylesheet" href="style.css?v=20260924a">
+  <!-- Garde d'accès : réservé à l'administrateur connecté. -->
+  <script src="auth.js?v=20260924a"></script>
+  <script>
+    Auth.requireRole("admin");
+  </script>
+  <!-- PWA : installation Android / Desktop -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1a2f5e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Arc en Ciel" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      });
+    }
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <header class="topbar">
+      <img class="logo-img" src="logo.jpg" alt="Arc-en-ciel Business" />
+    </header>
+
+    <main class="page">
+      <div class="page-head flex between" style="align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div class="crumb">Administration</div>
+          <h1>Cartes retirées</h1>
+        </div>
+        <button type="button" class="btn btn-gold" id="backToDashBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Tableau de bord
+        </button>
+      </div>
+
+      <div class="reg-grid" style="margin-bottom:16px;">
+        <div class="reg-field">
+          <label for="retireSearch">Recherche (n° carte ou nom)</label>
+          <input class="input" type="text" id="retireSearch" placeholder="Ex. 0007 ou Tinho" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th>N° de carte</th>
+              <th>Nom du client</th>
+              <th style="text-align:center">Date d'enregistrement</th>
+              <th style="text-align:center">Date de retrait</th>
+              <th style="text-align:right">Montant retiré</th>
+              <th style="text-align:right">Voir la carte</th>
+            </tr>
+          </thead>
+          <tbody id="retiresBody"><!-- injecté --></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+  <div class="modal-scrim" id="cardViewScrim">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-head">
+        <h3 id="cardViewTitle">Carte</h3>
+        <button class="drawer-close" id="cardViewClose"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="modal-body" id="cardViewBody"></div>
+    </div>
+  </div>
+
+  <script src="db.js?v=20260924a"></script>
+  <script src="cartes-retirees.js?v=20260924a"></script>
+</body>
+</html>
